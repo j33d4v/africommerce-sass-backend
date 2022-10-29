@@ -70,4 +70,6 @@ const ProductSchema = new Schema(
 );
 
 const Products = mongoose.model("Product", ProductSchema);
-module.exports = Products; //exporting the created model
+const RatingsModel = mongoose.model("Rating", ratingSchema);
+
+module.exports = { Products, RatingsModel}; //exporting the created model

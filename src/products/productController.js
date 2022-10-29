@@ -1,4 +1,4 @@
-const Product = require('../../model/products')
+const {Products, RatingsModel} = require('../../model/products')
 const Category = require("../../model/categories")
 
 
@@ -6,7 +6,7 @@ const createProduct = async (req, res, next) => {
   /**
    * create new product with required parameters
    */
-  const productToSave = new Product({
+  const productToSave = new Products({
     name: req.body.name,
     brand_name: req.body.brand_name,
     category: req.body.category,
@@ -41,7 +41,7 @@ const createProduct = async (req, res, next) => {
 }
 
 const getAllProducts = async (req, res) => {
-  const products = await Product.find()
+  const products = await Products.find()
   res.status(200).json({ nbHits: products.length, products })
 
 }
@@ -50,7 +50,7 @@ const getAllProducts = async (req, res) => {
 
 const getProduct = async (req, res) => {
   const { id: productID } = req.params// destructured the req.params.id and passed it to var
-  const product = await Product.findOne({ _id: productID })
+  const product = await Products.findOne({ _id: productID })
   res.status(200).json({ product })
 
 }
@@ -58,7 +58,7 @@ const getProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   const productID = req.params.id
   const { name, price, quantity, desc } = req.body
-  const product = await Product.findByIdAndUpdate(productID, req.body, { new: true })
+  const product = await Products.findByIdAndUpdate(productID, req.body, { new: true })
   if (!product) {
     return res.status(404).send("Product to update not found!")
   }
@@ -69,7 +69,7 @@ const updateProduct = async (req, res) => {
 
 const deleteProduct = async (req, res) => {
   const productID = req.params.id
-  const product = await Product.findOneAndDelete({ _id: productID })
+  const product = await Products.findOneAndDelete({ _id: productID })
   if (!product) {
     return res.status(404).send("Product with this id not found!")
   }
@@ -80,7 +80,7 @@ const deleteProduct = async (req, res) => {
 
 
 const TopProducts = async (req, res, next) => {
-  const products = await Product.aggregate([
+  const products = await Products.aggregate([
     {
       // STAGE 1
       $addFields: {
@@ -130,10 +130,37 @@ const TopProducts = async (req, res, next) => {
 
 const latestProduct = async (req, res, next) => {
   /*SORT PRODUCTS BY DATE */
-  const latestProducts = await Product.find({})
+  const latestProducts = await Products.find({})
     .sort({ createdAt: "desc" })
     .limit(10);
   res.status(200).json({ status: true, latestProducts: latestProducts });
+
+}
+
+const rateProduct = async (req, res) => {
+  /* Add rating to product */
+  const productID = req.params.id
+
+  if (!productID) {
+      return res.status(404).send("Please provide your rating!")
+  }
+
+  const rating = new RatingsModel({
+    value : req.body.rating,
+    user_id : req.user.id
+  })
+
+  const product = await Products.findById(productID)
+
+  if (!product) {
+    return res.status(404).send("Product not found!")
+  }
+
+  product.ratings = product.ratings.push(rating)
+
+  product.save()
+ 
+  res.status(200).json({ msg: 'Rating added successfully', data: product});
 
 }
 
@@ -146,5 +173,5 @@ module.exports = {
   deleteProduct,
   TopProducts,
   latestProduct,
-
+  rateProduct
 }

@@ -4,6 +4,7 @@ const { body, validationResult } = require("express-validator")
 const { hashPassword, validateUser } = require("../../config/helper")
 
 const authenticate = require('../../middleware/authenticate')
+const { json } = require("body-parser")
 
 async function createUser(req, res) {
     const { firstname, lastname, username, email, password, phonenumber } = req.body;

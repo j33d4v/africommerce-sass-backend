@@ -14,7 +14,8 @@ const {
     updateProduct,
     deleteProduct,
     TopProducts,
-    latestProduct
+    latestProduct,
+    rateProduct
 } = require("./productController")
 
 const { validateProduct, validate } = require("../../middleware/productValidation")
@@ -37,10 +38,11 @@ productRoute
     .route("/latest-products")
     .get(latestProduct)
 
-
-
 productRoute.route('/:id')
     .put(updateProduct)
     .get(getProduct)
+
+productRoute.route('/rate-product/:id')
+    .put(authenticate.verifyUser, rateProduct)
 
 module.exports = productRoute;
